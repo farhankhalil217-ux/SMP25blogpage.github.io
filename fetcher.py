@@ -115,7 +115,7 @@ def generate_blog(source_type, title, data):
     
     # NEW SDK SYNTAX
     response = client.models.generate_content(
-        model='gemini-1.5-pro',
+        model='gemini-2.5-flash',
         contents=prompt
     )
     return response.text
