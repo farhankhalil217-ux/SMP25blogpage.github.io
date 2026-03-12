@@ -1,0 +1,47 @@
+
+name: Bi-Weekly Netlify Publisher
+
+on:
+  schedule:
+    - cron: '0 8 * * 2,5'
+  workflow_dispatch:
+
+jobs:
+  publish_articles:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Essential for clean rebasing
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Publisher Script
+        run: python publisher.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Add ALL changes (including the new archive folder and updated index.html)
+          git add .
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-published AI drafts [skip ci]"
+            # Pull with a strategy that favors the Action's version of index.html
+            git pull origin main --rebase --strategy-option=theirs
+            git push origin main
+          else
+            echo "No changes detected."
+          fi
