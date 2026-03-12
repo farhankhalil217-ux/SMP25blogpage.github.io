@@ -1,4 +1,7 @@
-import os, json, re
+print("VERSION 17.0 - SOLAR METRIX FALLBACK ENGINE")
+import os, json, re, random, hashlib
+import urllib.request
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from googleapiclient.discovery import build
 from youtube_transcript_api import YouTubeTranscriptApi
@@ -13,10 +16,6 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
 youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
 
-# ==========================================
-# 2. SOLAR METRIX SEARCH QUERIES
-# ==========================================
-# The script will randomly pick one of these to search YouTube every day
 SEARCH_QUERIES = [
     "utility scale solar O&M optimization",
     "solar P50 P90 yield analysis",
@@ -27,102 +26,130 @@ SEARCH_QUERIES = [
 ]
 
 # ==========================================
-# 3. THE SOLAR ENGINEER PROMPT
+# 2. THE SOLAR ENGINEER PROMPT
 # ==========================================
 SYSTEM_PROMPT = """
 You are a Senior Solar Performance Engineer and Technical Writer for 'Solar Metrix', an advanced SaaS platform for solar yield simulation and physics modeling. 
 
-Your job is to write a highly technical, engaging, and professional blog post based on the provided video transcript. 
+Your job is to write a highly technical, engaging, and professional blog post based on the provided source data (which will either be a YouTube transcript or an Industry News brief). 
 
 Target Audience: Solar asset managers, EPC engineers, and renewable energy investors.
-Tone: Data-driven, authoritative, analytical, and slightly contrarian. Challenge outdated industry standards (like static degradation rates) and advocate for dynamic, data-driven modeling.
+Tone: Data-driven, authoritative, analytical, and slightly contrarian. Challenge outdated industry standards and advocate for dynamic, data-driven modeling.
 
 Guidelines:
 1. Do not act like a generic AI. Write like an industry veteran.
 2. Use proper markdown (## for headings, bold text, bullet points).
 3. Do not include a main # title (the publisher script will handle it). Start immediately with an engaging introductory paragraph.
 4. Naturally weave in concepts like P50/P90 probability, O&M costs, albedo, clipping, or satellite data where relevant.
-5. Do not explicitly mention the YouTube video. Present these as your own original Solar Metrix engineering insights.
+5. Do not explicitly mention that you are reacting to a video or an article. Present this as your own original Solar Metrix engineering analysis on a trending topic.
 """
-
-def get_latest_video():
-    import random
-    query = random.choice(SEARCH_QUERIES)
-    print(f"Searching YouTube for: {query}")
-    
-    request = youtube.search().list(
-        q=query, part="snippet", type="video",
-        maxResults=10, order="date", relevanceLanguage="en"
-    )
-    response = request.execute()
-    
-    # Load history
-    history_file = "processed_videos.txt"
-    if os.path.exists(history_file):
-        with open(history_file, "r") as f:
-            processed = f.read().splitlines()
-    else:
-        processed = []
-
-    for item in response['items']:
-        vid_id = item['id']['videoId']
-        if vid_id not in processed:
-            return vid_id, item['snippet']['title']
-            
-    return None, None
 
 def get_transcript(video_id):
     try:
         transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
         return " ".join([t['text'] for t in transcript_list])
-    except Exception as e:
-        print(f"Transcript failed: {e}")
+    except Exception:
         return None
 
-def generate_blog(title, transcript):
-    model = genai.GenerativeModel('gemini-1.5-pro-latest')
-    prompt = f"{SYSTEM_PROMPT}\n\nVideo Topic/Title: {title}\n\nTranscript Data to analyze:\n{transcript[:15000]}"
+def get_latest_news(processed_list):
+    print("Falling back to Google News RSS...")
+    news_query = "solar+energy+technology+optimization"
+    url = f"https://news.google.com/rss/search?q={news_query}&hl=en-US&gl=US&ceid=US:en"
     
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        response = urllib.request.urlopen(req)
+        xml_data = response.read()
+        root = ET.fromstring(xml_data)
+        
+        for item in root.findall('./channel/item'):
+            title = item.find('title').text
+            description = item.find('description').text
+            
+            # Create a unique ID for the news article using a hash
+            news_id = "news_" + hashlib.md5(title.encode('utf-8')).hexdigest()
+            
+            if news_id not in processed_list:
+                content = f"Headline: {title}\n\nSummary/Context:\n{description}"
+                return "Industry News Brief", news_id, title, content
+    except Exception as e:
+        print(f"News fetch failed: {e}")
+        
+    return None, None, None, None
+
+def get_content():
+    history_file = "processed_videos.txt"
+    if os.path.exists(history_file):
+        with open(history_file, "r") as f:
+            processed = set(f.read().splitlines())
+    else:
+        processed = set()
+
+    # 1. TRY YOUTUBE FIRST (Loop through shuffled queries)
+    random.shuffle(SEARCH_QUERIES)
+    for query in SEARCH_QUERIES:
+        print(f"Searching YouTube for: {query}")
+        try:
+            request = youtube.search().list(q=query, part="snippet", type="video", maxResults=5, order="date", relevanceLanguage="en")
+            response = request.execute()
+            
+            for item in response.get('items', []):
+                vid_id = item['id']['videoId']
+                if vid_id not in processed:
+                    transcript = get_transcript(vid_id)
+                    if transcript:
+                        return "YouTube Transcript", vid_id, item['snippet']['title'], transcript
+                    else:
+                        # Save unreadable videos to history so we skip them next time
+                        with open(history_file, "a") as f:
+                            f.write(vid_id + "\n")
+                        processed.add(vid_id)
+        except Exception as e:
+            print(f"YouTube search error on '{query}': {e}")
+            continue
+
+    # 2. IF ALL YOUTUBE FAILS, FALL BACK TO NEWS
+    return get_latest_news(processed)
+
+def generate_blog(source_type, title, data):
+    model = genai.GenerativeModel('gemini-1.5-pro-latest')
+    prompt = f"{SYSTEM_PROMPT}\n\nSource Type: {source_type}\nTopic/Title: {title}\n\nData to analyze:\n{data[:15000]}"
     response = model.generate_content(prompt)
     return response.text
 
 def main():
     if not YOUTUBE_API_KEY or not GEMINI_API_KEY:
-        print("Missing API Keys!")
+        print("CRITICAL: Missing API Keys!")
         return
 
     os.makedirs("drafts", exist_ok=True)
     
-    vid_id, title = get_latest_video()
-    if not vid_id:
-        print("No new solar videos found today.")
+    source_type, item_id, title, data = get_content()
+    
+    if not source_type:
+        print("No new videos OR news found today.")
         return
         
-    print(f"Found new video: {title}")
-    transcript = get_transcript(vid_id)
-    
-    if not transcript:
-        # Mark as processed even if it fails so it doesn't get stuck on a video with no captions
-        with open("processed_videos.txt", "a") as f:
-            f.write(vid_id + "\n")
-        return
-
+    print(f"Found new content via {source_type}: {title}")
     print("Generating Solar Metrix Article...")
-    blog_content = generate_blog(title, transcript)
+    
+    blog_content = generate_blog(source_type, title, data)
     
     # Clean up title for filename
     safe_title = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"drafts/{date_str}-{safe_title[:40]}.md"
     
-    # Prepend the title so publisher.py can read it
-    final_file_content = f"# {title}\n\n{blog_content}"
+    # Clean up news titles (they often have ' - Publisher Name' at the end)
+    display_title = title.split(' - ')[0] if source_type == "Industry News Brief" else title
+    
+    final_file_content = f"# {display_title}\n\n{blog_content}"
     
     with open(filename, "w", encoding="utf-8") as f:
         f.write(final_file_content)
         
     with open("processed_videos.txt", "a") as f:
-        f.write(vid_id + "\n")
+        f.write(item_id + "\n")
         
     print(f"Success! Saved to {filename}")
 
