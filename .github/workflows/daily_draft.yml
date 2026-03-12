@@ -42,7 +42,7 @@ jobs:
           [ -f "processed_videos.txt" ] && git add processed_videos.txt
           
           if ! git diff --staged --quiet; then
-            git commit -m "Auto-drafted new AI blog post [skip ci]"
+            git commit -m "Auto-drafted new SOLAR blog post [skip ci]"
             git pull origin main --no-rebase --strategy-option=union
             git push origin main
           else
