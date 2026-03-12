@@ -3,7 +3,7 @@ import os, glob, markdown, re, shutil, random
 from datetime import datetime
 
 # We are targeting the new blog.html
-HTML_FILE = "blog.html"
+HTML_FILE = "index.html"
 
 def process_drafts():
     if not os.path.exists("drafts"): return
