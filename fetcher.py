@@ -1,11 +1,11 @@
-print("VERSION 17.0 - SOLAR METRIX FALLBACK ENGINE")
+print("VERSION 18.0 - SOLAR METRIX (NEW GENAI SDK)")
 import os, json, re, random, hashlib
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from googleapiclient.discovery import build
 from youtube_transcript_api import YouTubeTranscriptApi
-import google.generativeai as genai
+from google import genai
 
 # ==========================================
 # 1. CONFIGURATION & API KEYS
@@ -13,8 +13,8 @@ import google.generativeai as genai
 YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-genai.configure(api_key=GEMINI_API_KEY)
 youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 SEARCH_QUERIES = [
     "utility scale solar O&M optimization",
@@ -85,7 +85,7 @@ def get_content():
     else:
         processed = set()
 
-    # 1. TRY YOUTUBE FIRST (Loop through shuffled queries)
+    # 1. TRY YOUTUBE FIRST
     random.shuffle(SEARCH_QUERIES)
     for query in SEARCH_QUERIES:
         print(f"Searching YouTube for: {query}")
@@ -100,7 +100,6 @@ def get_content():
                     if transcript:
                         return "YouTube Transcript", vid_id, item['snippet']['title'], transcript
                     else:
-                        # Save unreadable videos to history so we skip them next time
                         with open(history_file, "a") as f:
                             f.write(vid_id + "\n")
                         processed.add(vid_id)
@@ -108,13 +107,17 @@ def get_content():
             print(f"YouTube search error on '{query}': {e}")
             continue
 
-    # 2. IF ALL YOUTUBE FAILS, FALL BACK TO NEWS
+    # 2. FALL BACK TO NEWS
     return get_latest_news(processed)
 
 def generate_blog(source_type, title, data):
-    model = genai.GenerativeModel('gemini-1.5-pro')
     prompt = f"{SYSTEM_PROMPT}\n\nSource Type: {source_type}\nTopic/Title: {title}\n\nData to analyze:\n{data[:15000]}"
-    response = model.generate_content(prompt)
+    
+    # NEW SDK SYNTAX
+    response = client.models.generate_content(
+        model='gemini-1.5-pro',
+        contents=prompt
+    )
     return response.text
 
 def main():
@@ -135,14 +138,11 @@ def main():
     
     blog_content = generate_blog(source_type, title, data)
     
-    # Clean up title for filename
     safe_title = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"drafts/{date_str}-{safe_title[:40]}.md"
     
-    # Clean up news titles (they often have ' - Publisher Name' at the end)
     display_title = title.split(' - ')[0] if source_type == "Industry News Brief" else title
-    
     final_file_content = f"# {display_title}\n\n{blog_content}"
     
     with open(filename, "w", encoding="utf-8") as f:
