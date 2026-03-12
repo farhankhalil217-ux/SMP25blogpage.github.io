@@ -112,7 +112,7 @@ def get_content():
     return get_latest_news(processed)
 
 def generate_blog(source_type, title, data):
-    model = genai.GenerativeModel('gemini-1.5-pro-latest')
+    model = genai.GenerativeModel('gemini-1.5-pro')
     prompt = f"{SYSTEM_PROMPT}\n\nSource Type: {source_type}\nTopic/Title: {title}\n\nData to analyze:\n{data[:15000]}"
     response = model.generate_content(prompt)
     return response.text
