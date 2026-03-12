@@ -15,16 +15,18 @@ jobs:
       contents: write
     
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
-      - name: Install dependencies
-        run: pip install google-api-python-client youtube-transcript-api google-genai
+      # ADD THIS MISSING STEP:
+      - name: Install Dependencies
+        run: |
+          pip install google-generativeai google-api-python-client youtube-transcript-api
 
       - name: Run Fetcher Script
         env:
