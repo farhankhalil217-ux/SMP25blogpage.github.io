@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blog | Solar Metrix Insights</title>
   
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -120,71 +120,7 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        
-        <div class="glass-panel flex flex-col overflow-hidden group hover:border-slate-500 transition-colors">
-          <div class="h-48 overflow-hidden relative bg-slate-800">
-            <img src="https://images.unsplash.com/photo-1592833159155-c62df1b65634?auto=format&fit=crop&q=80&w=600" alt="Solar Farm" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80">
-          </div>
-          <div class="p-6 flex-1 flex flex-col">
-            <div class="text-xs font-bold text-emerald-400 mb-3 uppercase tracking-wider">Engineering</div>
-            <h3 class="text-xl font-bold text-white mb-3">Understanding Dynamic Soiling Penalties</h3>
-            <p class="text-slate-400 text-sm leading-relaxed mb-6 flex-1">
-              Why static degradation rates are costing you money. Learn how geographical profiling changes long-term yield estimates.
-            </p>
-            <div class="flex items-center justify-between mt-auto border-t border-slate-800 pt-4">
-              <span class="text-xs text-slate-500 font-medium">Oct 18, 2024</span>
-              <a href="#" class="text-sm font-bold text-white hover:text-emerald-400 transition-colors">Read More</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="glass-panel flex flex-col overflow-hidden group hover:border-slate-500 transition-colors">
-          <div class="h-48 overflow-hidden relative bg-slate-800">
-            <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=600" alt="Financial Charts" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80">
-          </div>
-          <div class="p-6 flex-1 flex flex-col">
-            <div class="text-xs font-bold text-amber-400 mb-3 uppercase tracking-wider">Finance</div>
-            <h3 class="text-xl font-bold text-white mb-3">P50 vs P90: What Investors Actually Want to See</h3>
-            <p class="text-slate-400 text-sm leading-relaxed mb-6 flex-1">
-              A deep dive into probability reports. Discover how to frame your proposals to secure funding faster and close bigger deals.
-            </p>
-            <div class="flex items-center justify-between mt-auto border-t border-slate-800 pt-4">
-              <span class="text-xs text-slate-500 font-medium">Oct 12, 2024</span>
-              <a href="#" class="text-sm font-bold text-white hover:text-amber-400 transition-colors">Read More</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="glass-panel flex flex-col overflow-hidden group hover:border-slate-500 transition-colors">
-          <div class="h-48 overflow-hidden relative bg-slate-800 flex items-center justify-center">
-             <i data-lucide="file-check" class="w-16 h-16 text-slate-600 group-hover:text-sky-400 transition-colors"></i>
-          </div>
-          <div class="p-6 flex-1 flex flex-col">
-            <div class="text-xs font-bold text-sky-400 mb-3 uppercase tracking-wider">Tutorial</div>
-            <h3 class="text-xl font-bold text-white mb-3">Customizing Your White-Label PDF Exports</h3>
-            <p class="text-slate-400 text-sm leading-relaxed mb-6 flex-1">
-              Step-by-step guide on how to inject your company branding and remove Solar Metrix watermarks from client deliverables.
-            </p>
-            <div class="flex items-center justify-between mt-auto border-t border-slate-800 pt-4">
-              <span class="text-xs text-slate-500 font-medium">Oct 05, 2024</span>
-              <a href="#" class="text-sm font-bold text-white hover:text-sky-400 transition-colors">Read More</a>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="mt-16 flex justify-center gap-2">
-        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500 transition-colors bg-slate-900/50">
-          <i data-lucide="chevron-left" class="w-5 h-5"></i>
-        </button>
-        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-sky-500 text-white bg-sky-900/30 font-bold">1</button>
-        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500 transition-colors bg-slate-900/50 font-medium">2</button>
-        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500 transition-colors bg-slate-900/50 font-medium">3</button>
-        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500 transition-colors bg-slate-900/50">
-          <i data-lucide="chevron-right" class="w-5 h-5"></i>
-        </button>
+      <div id="dynamic-articles-container" class="space-y-12 max-w-4xl mx-auto">
       </div>
 
     </div>
@@ -192,50 +128,16 @@
 
   <footer class="bg-slate-950 border-t border-slate-900 pt-16 pb-8">
     <div class="max-w-7xl mx-auto px-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-        <div class="col-span-1 md:col-span-2">
-          <div class="flex items-center gap-2 mb-4">
-            <i data-lucide="sun" class="w-5 h-5 text-sky-400"></i>
-            <span class="font-bold text-white">SOLAR METRIX</span>
-          </div>
-          <p class="text-slate-500 text-sm leading-relaxed max-w-xs">
-            Advanced solar yield simulation software for the modern energy professional. Powered by open-source climate data and proprietary physics algorithms.
-          </p>
-        </div>
-        
-        <div>
-          <h4 class="text-white font-bold mb-4">Product</h4>
-          <ul class="space-y-2 text-sm text-slate-500">
-            <li><a href="app.html" class="hover:text-sky-400">Launch App</a></li>
-            <li><a href="index.html#features" class="hover:text-sky-400">Features</a></li>
-            <li><a href="index.html#pricing" class="hover:text-sky-400">Pricing</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 class="text-white font-bold mb-4">Legal & Support</h4>
-          <ul class="space-y-2 text-sm text-slate-500">
-            <li><a href="privacy.html" class="hover:text-sky-400">Privacy Policy</a></li>
-            <li><a href="privacy.html" class="hover:text-sky-400">Terms of Service</a></li>
-            <li><a href="privacy.html#refunds" class="hover:text-sky-400">Refund Policy</a></li>
-          </ul>
-        </div>
-      </div>
-
       <div class="border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-600">
-        <p>&copy; 2024 Solar Metrix. All rights reserved.</p>
-        
+        <p>&copy; 2026 Solar Metrix. All rights reserved.</p>
         <div class="text-right">
-          <p>Operated by Solar Metrix Dev Team</p>
-          <p>Multan, Pakistan</p>
-          <p>Contact: <a href="mailto:support@solarmetrix.app" class="text-slate-500 hover:text-white">support@solarmetrix.app</a></p>
+          <p>Contact: support@solarmetrix.app</p>
         </div>
       </div>
     </div>
   </footer>
 
   <script>
-    // Initialize Icons
     lucide.createIcons();
   </script>
 </body>
